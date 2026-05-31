@@ -1,28 +1,2312 @@
-{
-  "name": "随机骰子工具",
-  "short_name": "随机骰子",
-  "description": "离线本地随机骰子工具，支持 D4、D8、D12、D20 外观与 1-4 均分结果记录。",
-  "lang": "zh-CN",
-  "id": "./",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#07111d",
-  "theme_color": "#08111c",
-  "categories": ["utilities"],
-  "icons": [
-    {
-      "src": "./icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#08111c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="随机骰子" />
+    <title>随机骰子工具 · 多面骰</title>
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+    <style>
+:root {
+  color-scheme: dark;
+  --bg: #07111d;
+  --bg-2: #0a1827;
+  --panel: rgba(12, 28, 43, 0.72);
+  --panel-strong: rgba(16, 35, 53, 0.9);
+  --line: rgba(142, 196, 255, 0.22);
+  --line-strong: rgba(126, 190, 255, 0.78);
+  --text: #f5f8fc;
+  --muted: rgba(226, 237, 250, 0.7);
+  --soft: rgba(226, 237, 250, 0.48);
+  --ice: #74bdff;
+  --ice-2: #b9e5ff;
+  --danger: #ff655b;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  --radius: 18px;
+  --nav-height: 76px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #050b13;
+  color: var(--text);
+}
+
+body {
+  background:
+    radial-gradient(circle at 50% 12%, rgba(91, 160, 222, 0.18), transparent 28%),
+    radial-gradient(circle at 18% 0%, rgba(130, 190, 255, 0.12), transparent 30%),
+    linear-gradient(155deg, #07111d 0%, #091522 45%, #03070d 100%);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+  border: 0;
+  cursor: pointer;
+}
+
+.app-shell {
+  position: relative;
+  width: min(100vw, 520px);
+  height: 100dvh;
+  margin: 0 auto;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(104, 176, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(104, 176, 255, 0.035) 1px, transparent 1px),
+    radial-gradient(circle at 50% 36%, rgba(43, 146, 255, 0.12), transparent 36%),
+    linear-gradient(180deg, rgba(8, 20, 32, 0.94), rgba(4, 10, 17, 0.98));
+  background-size: 28px 28px, 28px 28px, auto, auto;
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.42);
+}
+
+.app-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(124, 196, 255, 0.95) 0 1px, transparent 1.5px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.5) 0 1px, transparent 1.5px);
+  background-position: 18% 18%, 82% 33%;
+  background-size: 104px 128px, 156px 142px;
+  opacity: 0.2;
+}
+
+.topbar {
+  position: absolute;
+  z-index: 20;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: calc(62px + var(--safe-top));
+  padding: calc(12px + var(--safe-top)) 18px 8px;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-button {
+  width: 44px;
+  height: 44px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text);
+}
+
+.icon-button svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hamburger,
+.hamburger::before,
+.hamburger::after {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.hamburger {
+  position: relative;
+}
+
+.hamburger::before,
+.hamburger::after {
+  content: "";
+  position: absolute;
+  left: 0;
+}
+
+.hamburger::before {
+  top: -7px;
+}
+
+.hamburger::after {
+  top: 7px;
+}
+
+.back-mark {
+  width: 15px;
+  height: 15px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.dice-picker {
+  min-height: 44px;
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: rgba(16, 34, 52, 0.58);
+  box-shadow: inset 0 0 0 1px rgba(154, 207, 255, 0.13);
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.dice-picker.mini {
+  min-height: 38px;
+  padding-inline: 16px;
+  font-size: 14px;
+}
+
+.chevron {
+  width: 8px;
+  height: 8px;
+  border-right: 1.8px solid currentColor;
+  border-bottom: 1.8px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+}
+
+.page-stack {
+  position: relative;
+  height: 100%;
+  padding: calc(76px + var(--safe-top)) 16px calc(var(--nav-height) + var(--safe-bottom) + 18px);
+}
+
+.page {
+  position: absolute;
+  inset: calc(76px + var(--safe-top)) 16px calc(var(--nav-height) + var(--safe-bottom) + 18px);
+  display: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  animation: pageIn 190ms ease-out;
+}
+
+.page::-webkit-scrollbar {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+.page-home.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.7dvh, 16px);
+  overflow: hidden;
+  padding-bottom: 146px;
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-title {
+  text-align: center;
+}
+
+.page-title.compact {
+  margin-top: -8px;
+}
+
+.page-home .page-title p {
+  display: none;
+}
+
+.page-home .page-title h1 {
+  font-size: clamp(22px, 5.4vw, 30px);
+}
+
+.page-title p,
+.subpage-head p {
+  margin: 0 0 4px;
+  color: var(--ice-2);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.page-title h1,
+.subpage-head h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.subpage-head {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  min-height: 52px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.subpage-head.inline {
+  grid-template-columns: 1fr 44px;
+}
+
+.subpage-head > div {
+  grid-column: 2;
+}
+
+.subpage-head.inline > div {
+  grid-column: 1;
+  text-align: center;
+  padding-left: 44px;
+}
+
+.orbital-field {
+  position: absolute;
+  left: 50%;
+  top: clamp(210px, 42dvh, 270px);
+  width: min(72vw, 300px);
+  aspect-ratio: 1 / 0.42;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(101, 186, 255, 0.32);
+  box-shadow:
+    0 0 12px rgba(93, 177, 255, 0.42),
+    inset 0 0 18px rgba(93, 177, 255, 0.18);
+  pointer-events: none;
+}
+
+.orbital-field.large {
+  top: 180px;
+  width: min(72vw, 320px);
+}
+
+.orbital-field span {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  border: 1px solid rgba(110, 190, 255, 0.16);
+}
+
+.orbital-field span:nth-child(2) {
+  inset: 23%;
+}
+
+.orbital-field span:nth-child(3) {
+  inset: -10% 6%;
+}
+
+.dice-stage {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  min-height: clamp(126px, 29dvh, 210px);
+  margin-top: 10px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+}
+
+.page-home .dice-stage {
+  height: clamp(132px, 29dvh, 210px);
+  min-height: 0;
+  margin-top: 0;
+}
+
+.dice-icon {
+  width: min(44vw, 180px);
+  height: min(44vw, 180px);
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 26px 28px rgba(0, 0, 0, 0.58)) drop-shadow(0 0 18px rgba(137, 204, 255, 0.2));
+  transform-origin: 50% 50%;
+  transition: transform 240ms ease, filter 240ms ease;
+  user-select: none;
+}
+
+.dice-icon svg,
+.history-dice-icon svg,
+.mini-dice-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.dice-icon.rolling {
+  animation: diceImageRoll 720ms cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+
+@keyframes diceImageRoll {
+  0% {
+    transform: rotate(0deg) scale(1);
+    filter: drop-shadow(0 26px 28px rgba(0, 0, 0, 0.58)) drop-shadow(0 0 14px rgba(137, 204, 255, 0.18));
+  }
+  38% {
+    transform: rotate(145deg) scale(1.08);
+    filter: drop-shadow(0 28px 30px rgba(0, 0, 0, 0.56)) drop-shadow(0 0 26px rgba(137, 204, 255, 0.46));
+  }
+  72% {
+    transform: rotate(292deg) scale(0.98);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    filter: drop-shadow(0 26px 28px rgba(0, 0, 0, 0.58)) drop-shadow(0 0 18px rgba(137, 204, 255, 0.2));
+  }
+}
+
+.page-home .dice-icon {
+  width: min(34vw, 142px, 24dvh);
+  height: min(34vw, 142px, 24dvh);
+}
+
+.result-panel {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  margin: -6px 0 18px;
+}
+
+.page-home .result-panel {
+  margin: -4px 0 0;
+}
+
+.result-panel span {
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.result-panel strong {
+  min-height: 54px;
+  font-size: clamp(42px, 7dvh, 56px);
+  line-height: 1;
+}
+
+.primary-pill,
+.secondary-pill {
+  min-height: 56px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: white;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.025)),
+    rgba(29, 55, 80, 0.52);
+  box-shadow:
+    inset 0 0 0 1px rgba(190, 225, 255, 0.92),
+    inset 0 0 24px rgba(106, 178, 255, 0.2),
+    0 0 20px rgba(112, 190, 255, 0.28);
+  backdrop-filter: blur(18px);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.primary-pill {
+  width: min(78vw, 280px);
+  margin: 0 auto;
+  display: flex;
+}
+
+.page-home #rollButton {
+  position: fixed;
+  z-index: 35;
+  left: 50%;
+  bottom: calc(96px + var(--safe-bottom));
+  transform: translateX(-50%);
+  width: min(calc(100vw - 64px), 340px);
+}
+
+.primary-pill svg,
+.secondary-pill svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.secondary-pill {
+  min-height: 52px;
+  padding: 0 20px;
+  font-size: 15px;
+  box-shadow:
+    inset 0 0 0 1px rgba(151, 204, 255, 0.25),
+    inset 0 0 18px rgba(106, 178, 255, 0.11);
+}
+
+.dice-grid,
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.select-card,
+.style-card {
+  position: relative;
+  min-height: 160px;
+  padding: 12px;
+  display: grid;
+  justify-items: center;
+  align-content: space-between;
+  gap: 8px;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01)),
+    rgba(11, 25, 39, 0.76);
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.14);
+}
+
+.select-card.selected,
+.style-card.selected {
+  box-shadow:
+    inset 0 0 0 1.5px var(--line-strong),
+    0 0 18px rgba(103, 181, 255, 0.13);
+}
+
+.select-card .dice-icon-card,
+.style-card .dice-icon-card {
+  width: 82px;
+  height: 82px;
+  filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.42)) drop-shadow(0 0 10px rgba(137, 204, 255, 0.16));
+}
+
+.select-card strong,
+.style-card strong {
+  font-size: 18px;
+}
+
+.select-card span,
+.style-card span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.checkmark {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #7dbfff, #3e7fca);
+  box-shadow: 0 0 12px rgba(100, 180, 255, 0.45);
+  font-weight: 900;
+}
+
+.result-showcase {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  padding-top: 24px;
+}
+
+.result-dice {
+  width: min(47vw, 190px);
+  height: min(47vw, 190px);
+  margin: 16px 0 24px;
+}
+
+.final-result {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.final-result strong {
+  font-size: 42px;
+}
+
+.auto-save-hint {
+  min-height: 24px;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: rgba(226, 237, 250, 0.52);
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.auto-save-hint.show {
+  opacity: 1;
+}
+
+.auto-save-hint svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.action-row.single {
+  display: flex;
+  justify-content: center;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  min-height: 42px;
+  padding: 4px;
+  border-radius: 11px;
+  background: rgba(8, 20, 33, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(139, 197, 255, 0.12);
+}
+
+.segmented button {
+  min-height: 34px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.segmented button.active {
+  color: white;
+  background: linear-gradient(180deg, rgba(139, 193, 255, 0.42), rgba(72, 130, 206, 0.62));
+}
+
+.history-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  min-height: 230px;
+}
+
+.history-item {
+  display: grid;
+  grid-template-columns: 46px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 62px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(13, 29, 45, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(150, 202, 255, 0.09);
+}
+
+.history-dice-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.38));
+}
+
+.history-meta {
+  display: grid;
+  gap: 2px;
+}
+
+.history-meta strong {
+  font-size: 13px;
+}
+
+.history-meta span {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.history-item time {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.empty-state {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  text-align: center;
+  border-radius: 8px;
+  background: rgba(12, 28, 43, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.08);
+}
+
+.danger-action {
+  width: 100%;
+  min-height: 52px;
+  margin: 18px 0 4px;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--danger);
+  font-weight: 800;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.stats-filter {
+  display: grid;
+  place-items: center;
+  margin: -6px 0 12px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.stat-card {
+  min-height: 76px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  border-radius: 8px;
+  background: rgba(12, 28, 43, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.1);
+}
+
+.stat-card span {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.stat-card strong {
+  font-size: 22px;
+}
+
+.chart-panel,
+.about-panel {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(12, 28, 43, 0.68);
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.12);
+}
+
+.chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chart-head h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.chart-head span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.bar-chart {
+  height: 220px;
+  margin: 16px 0 6px;
+  padding: 0 8px 18px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: end;
+  gap: 14px;
+  border-left: 1px solid rgba(151, 204, 255, 0.18);
+  border-bottom: 1px solid rgba(151, 204, 255, 0.18);
+  background:
+    linear-gradient(rgba(151, 204, 255, 0.07) 1px, transparent 1px);
+  background-size: 100% 25%;
+}
+
+.bar-wrap {
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  height: 100%;
+  gap: 6px;
+}
+
+.bar {
+  width: min(12vw, 36px);
+  min-height: 4px;
+  border-radius: 5px 5px 0 0;
+  background: linear-gradient(180deg, #8fc8ff, #4b85d6);
+  box-shadow: 0 0 16px rgba(99, 174, 255, 0.26);
+}
+
+.bar-label {
+  font-size: 12px;
+}
+
+.bar-count {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.chart-panel p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+}
+
+.settings-list {
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(10, 25, 40, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.11);
+}
+
+.setting-row {
+  min-height: 58px;
+  width: 100%;
+  padding: 9px 12px;
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border-bottom: 1px solid rgba(151, 204, 255, 0.08);
+  text-align: left;
+}
+
+.setting-row:last-child {
+  border-bottom: 0;
+}
+
+.setting-row svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.setting-row strong {
+  display: block;
+  font-size: 15px;
+}
+
+.setting-row span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.switch {
+  position: relative;
+  width: 50px;
+  height: 30px;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+}
+
+.switch i,
+.drawer-toggle i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(91, 105, 122, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.switch i::before,
+.drawer-toggle i::before {
+  content: "";
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  top: 3px;
+  left: 3px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  transition: transform 180ms ease;
+}
+
+.switch input:checked + i,
+.drawer-toggle input:checked + i {
+  background: linear-gradient(180deg, #7ebcff, #3c7fcb);
+}
+
+.switch input:checked + i::before,
+.drawer-toggle input:checked + i::before {
+  transform: translateX(20px);
+}
+
+.row-chevron {
+  width: 9px;
+  height: 9px;
+  border-right: 1.7px solid currentColor;
+  border-bottom: 1.7px solid currentColor;
+  transform: rotate(-45deg);
+  opacity: 0.9;
+}
+
+.style-preview {
+  min-height: 164px;
+  display: grid;
+  place-items: center;
+}
+
+.about-panel {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.about-panel h3,
+.about-panel p {
+  margin: 0;
+}
+
+.about-panel p {
+  color: var(--muted);
+  line-height: 1.65;
+  font-size: 14px;
+}
+
+.app-mark {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04));
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.2);
+}
+
+.mini-dice-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 7px 10px rgba(0, 0, 0, 0.34));
+}
+
+.bottom-nav {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  bottom: calc(10px + var(--safe-bottom));
+  width: min(calc(100vw - 24px), 496px);
+  height: 66px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  padding: 6px;
+  border-radius: 20px;
+  background: rgba(9, 22, 35, 0.72);
+  box-shadow:
+    inset 0 0 0 1px rgba(145, 201, 255, 0.15),
+    0 -10px 40px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(18px);
+  transform: translateX(-50%);
+}
+
+.bottom-nav button {
+  min-height: 52px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 3px;
+  border-radius: 15px;
+  background: transparent;
+  color: rgba(232, 242, 255, 0.76);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bottom-nav button.active {
+  color: var(--ice);
+  background: rgba(126, 190, 255, 0.08);
+}
+
+.bottom-nav svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.side-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.side-drawer.open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.drawer-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.side-drawer.open .drawer-scrim {
+  opacity: 1;
+}
+
+.drawer-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(78vw, 320px);
+  height: 100%;
+  padding: calc(24px + var(--safe-top)) 14px calc(18px + var(--safe-bottom));
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 18px;
+  background: rgba(10, 22, 35, 0.94);
+  box-shadow: -18px 0 50px rgba(0, 0, 0, 0.45), inset 1px 0 0 rgba(151, 204, 255, 0.1);
+  transform: translateX(100%);
+  transition: transform 220ms ease;
+  backdrop-filter: blur(22px);
+}
+
+.side-drawer.open .drawer-panel {
+  transform: translateX(0);
+}
+
+.drawer-profile {
+  display: grid;
+  grid-template-columns: 48px 1fr 44px;
+  align-items: center;
+  gap: 10px;
+}
+
+.drawer-profile strong,
+.drawer-profile span {
+  display: block;
+}
+
+.drawer-profile span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.drawer-links {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.drawer-links button {
+  min-height: 52px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  font-weight: 800;
+}
+
+.drawer-links button.active,
+.drawer-links button:active {
+  background: rgba(151, 204, 255, 0.12);
+}
+
+.drawer-toggle {
+  position: relative;
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 1fr 50px;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.drawer-toggle input {
+  position: absolute;
+  opacity: 0;
+}
+
+.drawer-toggle i {
+  position: relative;
+  width: 50px;
+  height: 30px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(96px + var(--safe-bottom));
+  z-index: 200;
+  max-width: min(86vw, 360px);
+  min-height: 42px;
+  padding: 10px 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(15, 31, 48, 0.92);
+  color: white;
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.24), 0 12px 30px rgba(0, 0, 0, 0.32);
+  transform: translate(-50%, 18px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+  backdrop-filter: blur(16px);
+  font-size: 14px;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.light-mode {
+  --bg: #eef5fb;
+  --bg-2: #dfeaf4;
+  --panel: rgba(236, 245, 252, 0.82);
+  --panel-strong: rgba(241, 247, 252, 0.92);
+  --line: rgba(58, 116, 168, 0.2);
+  --text: #0c1722;
+  --muted: rgba(18, 33, 47, 0.68);
+  background: #eef5fb;
+}
+
+.light-mode .app-shell {
+  background:
+    linear-gradient(rgba(59, 116, 172, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 116, 172, 0.04) 1px, transparent 1px),
+    radial-gradient(circle at 50% 34%, rgba(78, 153, 222, 0.17), transparent 38%),
+    linear-gradient(180deg, #eef5fb, #dfeaf4);
+}
+
+.light-mode .bottom-nav,
+.light-mode .drawer-panel,
+.light-mode .settings-list,
+.light-mode .chart-panel,
+.light-mode .about-panel,
+.light-mode .select-card,
+.light-mode .style-card,
+.light-mode .history-item,
+.light-mode .empty-state,
+.light-mode .stat-card {
+  background: rgba(238, 246, 252, 0.78);
+}
+
+@media (max-width: 370px) {
+  .page-stack {
+    padding-inline: 12px;
+  }
+
+  .page {
+    inset-inline: 12px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .select-card,
+  .style-card {
+    min-height: 148px;
+  }
+
+  .result-panel strong {
+    font-size: 50px;
+  }
+}
+
+@media (min-width: 700px) {
+  body {
+    overflow: auto;
+    padding: 28px 0;
+  }
+
+  .app-shell {
+    border-radius: 28px;
+    border: 1px solid rgba(151, 204, 255, 0.17);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar" aria-label="应用顶部栏">
+        <button class="icon-button" id="menuButton" type="button" aria-label="打开侧边菜单">
+          <span class="hamburger"></span>
+        </button>
+        <button class="dice-picker" id="dicePickerButton" type="button" aria-label="选择骰子">
+          <span id="currentDiceLabel">D20</span>
+          <span class="chevron"></span>
+        </button>
+        <button class="icon-button" id="quickSettingsButton" type="button" aria-label="打开设置">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
+            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 0 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L4.2 7A2 2 0 0 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 0 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
+          </svg>
+        </button>
+      </header>
+
+      <main class="page-stack" id="pageStack">
+        <section class="page page-home active" data-page="roll" aria-labelledby="rollTitle">
+          <div class="page-title compact">
+            <p>1. 首页 - 掷骰</p>
+            <h1 id="rollTitle">随机骰子工具</h1>
+          </div>
+          <div class="orbital-field" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <button class="dice-stage" id="stageDiceButton" type="button" aria-label="打开骰子选择">
+            <div class="dice-icon dice-icon-main" id="mainDiceVisual" role="img" aria-label="D20 骰子"></div>
+          </button>
+          <div class="result-panel" aria-live="polite">
+            <span>当前结果</span>
+            <strong id="currentResult">-</strong>
+          </div>
+          <button class="primary-pill" id="rollButton" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2 4 6.5v11L12 22l8-4.5v-11L12 2Z" />
+              <path d="m4 6.5 8 4.5 8-4.5M12 11v11" />
+              <path d="M9 7h.01M15 7h.01M12 16h.01" />
+            </svg>
+            开始掷骰
+          </button>
+        </section>
+
+        <section class="page page-select" data-page="select" aria-labelledby="selectTitle">
+          <div class="subpage-head">
+            <button class="icon-button back-button" type="button" data-back="roll" aria-label="返回">
+              <span class="back-mark"></span>
+            </button>
+            <div>
+              <p>2. 骰子选择</p>
+              <h2 id="selectTitle">选择骰子</h2>
+            </div>
+          </div>
+          <div class="dice-grid" id="diceGrid"></div>
+        </section>
+
+        <section class="page page-result" data-page="result" aria-labelledby="resultTitle">
+          <div class="subpage-head">
+            <button class="icon-button back-button" type="button" data-back="roll" aria-label="返回">
+              <span class="back-mark"></span>
+            </button>
+            <div>
+              <p>3. 掷骰结果</p>
+              <h2 id="resultTitle">D20</h2>
+            </div>
+            <button class="icon-button" id="soundPreviewButton" type="button" aria-label="音效">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M11 5 6 9H3v6h3l5 4V5Z" />
+                <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
+              </svg>
+            </button>
+          </div>
+          <div class="result-showcase">
+            <div class="orbital-field large" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="dice-icon result-dice" id="resultDiceVisual" role="img" aria-label="D20 骰子"></div>
+            <div class="final-result">
+              <span>结果：</span><strong id="finalResult">-</strong>
+            </div>
+            <div class="auto-save-hint" id="autoSaveHint" aria-live="polite">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m5 12 4 4 10-10" />
+              </svg>
+              <span>已自动保存到历史记录</span>
+            </div>
+          </div>
+          <div class="action-row single">
+            <button class="primary-pill" id="rerollButton" type="button">重新掷骰</button>
+          </div>
+        </section>
+
+        <section class="page" data-page="history" aria-labelledby="historyTitle">
+          <div class="subpage-head inline">
+            <div>
+              <p>4. 历史记录</p>
+              <h2 id="historyTitle">历史记录</h2>
+            </div>
+            <button class="icon-button" id="filterFocusButton" type="button" aria-label="筛选">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 5h18l-7 8v5l-4 2v-7L3 5Z" />
+              </svg>
+            </button>
+          </div>
+          <div class="segmented" id="historyFilters" role="tablist" aria-label="历史筛选"></div>
+          <div class="history-list" id="historyList"></div>
+          <button class="danger-action" id="clearHistoryButton" type="button">清空记录</button>
+        </section>
+
+        <section class="page" data-page="stats" aria-labelledby="statsTitle">
+          <div class="subpage-head">
+            <button class="icon-button back-button" type="button" data-back="roll" aria-label="返回">
+              <span class="back-mark"></span>
+            </button>
+            <div>
+              <p>5. 统计分析</p>
+              <h2 id="statsTitle">统计分析</h2>
+            </div>
+          </div>
+          <div class="stats-filter">
+            <button class="dice-picker mini" id="statsDiceButton" type="button">
+              <span id="statsFilterLabel">全部</span>
+              <span class="chevron"></span>
+            </button>
+          </div>
+          <div class="stats-grid" id="statsGrid"></div>
+          <div class="chart-panel">
+            <div class="chart-head">
+              <h3>结果分布（1-4均分）</h3>
+              <span>出现次数</span>
+            </div>
+            <div class="bar-chart" id="barChart"></div>
+            <p>每个结果理论概率：25%</p>
+          </div>
+        </section>
+
+        <section class="page" data-page="settings" aria-labelledby="settingsTitle">
+          <div class="subpage-head">
+            <button class="icon-button back-button" type="button" data-back="roll" aria-label="返回">
+              <span class="back-mark"></span>
+            </button>
+            <div>
+              <p>6. 设置</p>
+              <h2 id="settingsTitle">设置</h2>
+            </div>
+          </div>
+          <div class="settings-list" id="settingsList"></div>
+        </section>
+
+        <section class="page page-style" data-page="style" aria-labelledby="styleTitle">
+          <div class="subpage-head">
+            <button class="icon-button back-button" type="button" data-back="settings" aria-label="返回">
+              <span class="back-mark"></span>
+            </button>
+            <div>
+              <p>7. 骰子样式</p>
+              <h2 id="styleTitle">骰子样式</h2>
+            </div>
+          </div>
+          <div class="style-preview">
+            <div class="dice-icon" id="stylePreviewDice" role="img" aria-label="D20 骰子"></div>
+          </div>
+          <div class="style-grid" id="styleGrid"></div>
+        </section>
+
+        <section class="page" data-page="about" aria-labelledby="aboutTitle">
+          <div class="subpage-head">
+            <button class="icon-button back-button" type="button" data-back="settings" aria-label="返回">
+              <span class="back-mark"></span>
+            </button>
+            <div>
+              <p>关于应用</p>
+              <h2 id="aboutTitle">随机骰子工具</h2>
+            </div>
+          </div>
+          <div class="about-panel">
+            <div class="app-mark">
+              <div class="mini-dice-icon" data-static-dice="D20" aria-hidden="true"></div>
+            </div>
+            <h3>多面骰（1-4均分版）</h3>
+            <p>这是一个离线本地随机结果生成工具。D4、D8、D12、D20 仅代表外观造型，最终结果始终为 1、2、3、4，理论概率各 25%。</p>
+            <p>记录与偏好仅保存在当前浏览器的 localStorage 中，不需要服务器、账号或联网功能。</p>
+          </div>
+        </section>
+      </main>
+
+      <nav class="bottom-nav" aria-label="底部导航">
+        <button type="button" data-nav="roll" class="active">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2 4 6.5v11L12 22l8-4.5v-11L12 2Z" />
+            <path d="m4 6.5 8 4.5 8-4.5M12 11v11" />
+          </svg>
+          <span>掷骰</span>
+        </button>
+        <button type="button" data-nav="history">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 3v3M16 3v3M4 9h16M5 5h14v16H5z" />
+            <path d="m9 14 2 2 4-5" />
+          </svg>
+          <span>历史</span>
+        </button>
+        <button type="button" data-nav="stats">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 20V10M12 20V4M19 20v-7" />
+          </svg>
+          <span>统计</span>
+        </button>
+        <button type="button" data-nav="settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
+            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 0 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L4.2 7A2 2 0 0 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 0 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
+          </svg>
+          <span>设置</span>
+        </button>
+      </nav>
+    </div>
+
+    <aside class="side-drawer" id="sideDrawer" aria-hidden="true">
+      <div class="drawer-scrim" id="drawerScrim"></div>
+      <div class="drawer-panel">
+        <div class="drawer-profile">
+          <div class="mini-dice-icon" data-static-dice="D20" aria-hidden="true"></div>
+          <div>
+            <strong>随机骰子工具</strong>
+            <span>多面骰 · 离线 · 随机</span>
+          </div>
+          <button class="icon-button" id="drawerSettingsButton" type="button" aria-label="设置">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
+              <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 0 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L4.2 7A2 2 0 0 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 0 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="drawer-links">
+          <button type="button" data-drawer-nav="roll">掷骰</button>
+          <button type="button" data-drawer-nav="history">历史记录</button>
+          <button type="button" data-drawer-nav="stats">统计分析</button>
+          <button type="button" data-drawer-nav="style">骰子样式</button>
+          <button type="button" data-drawer-nav="settings">设置</button>
+          <button type="button" data-drawer-nav="about">关于应用</button>
+        </div>
+        <label class="drawer-toggle">
+          <span>深色模式</span>
+          <input type="checkbox" id="drawerDarkToggle" />
+          <i></i>
+        </label>
+      </div>
+    </aside>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script>
+(function () {
+  "use strict";
+
+  const DICE_FACES = {
+    D4: [1, 2, 3, 4],
+    D8: [1, 1, 2, 2, 3, 3, 4, 4],
+    D12: [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4],
+    D20: [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
+  };
+
+  const DICE_TYPES = ["D4", "D8", "D12", "D20"];
+  const FILTERS = ["全部", "D4", "D8", "D12", "D20"];
+  const STORE_KEY = "offlineDiceToolState.v1";
+  const LONG_PRESS_MS = 560;
+
+  const MATERIALS = [
+    { id: "silver", name: "统一银白金属", short: "银白" },
+  ];
+
+  const DEFAULT_SETTINGS = {
+    shake: true,
+    vibration: true,
+    sound: true,
+    animation3d: true,
+    darkMode: true,
+    material: "silver",
+  };
+
+  const state = {
+    currentDice: "D20",
+    currentPage: "roll",
+    previousPage: "roll",
+    historyFilter: "全部",
+    statsFilter: "全部",
+    lastPointer: {
+      clientX: 0,
+      clientY: 0,
+      touchX: 0,
+      touchY: 0,
+    },
+    nonce: 0,
+    lastRoll: null,
+    savedLastRollId: null,
+    history: [],
+    settings: { ...DEFAULT_SETTINGS },
+    drawerOpen: false,
+    shakeLock: false,
+    audioContext: null,
+    suppressNextClick: false,
+  };
+  let svgSeed = 0;
+
+  const $ = (selector) => document.querySelector(selector);
+  const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+  const el = {
+    body: document.body,
+    pages: $$(".page"),
+    nav: $$(".bottom-nav button"),
+    drawer: $("#sideDrawer"),
+    drawerScrim: $("#drawerScrim"),
+    drawerLinks: $$(".drawer-links button"),
+    currentDiceLabel: $("#currentDiceLabel"),
+    currentResult: $("#currentResult"),
+    finalResult: $("#finalResult"),
+    resultTitle: $("#resultTitle"),
+    autoSaveHint: $("#autoSaveHint"),
+    mainDiceVisual: $("#mainDiceVisual"),
+    resultDiceVisual: $("#resultDiceVisual"),
+    stylePreviewDice: $("#stylePreviewDice"),
+    diceGrid: $("#diceGrid"),
+    styleGrid: $("#styleGrid"),
+    historyFilters: $("#historyFilters"),
+    historyList: $("#historyList"),
+    statsGrid: $("#statsGrid"),
+    barChart: $("#barChart"),
+    statsFilterLabel: $("#statsFilterLabel"),
+    settingsList: $("#settingsList"),
+    drawerDarkToggle: $("#drawerDarkToggle"),
+    toast: $("#toast"),
+  };
+
+  function loadState() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+      if (DICE_TYPES.includes(saved.currentDice)) state.currentDice = saved.currentDice;
+      if (Number.isFinite(saved.nonce)) state.nonce = saved.nonce;
+      if (Array.isArray(saved.history)) state.history = saved.history.filter(isValidHistoryItem);
+      if (saved.settings && typeof saved.settings === "object") {
+        state.settings = { ...DEFAULT_SETTINGS, ...saved.settings };
+      }
+      if (!MATERIALS.some((material) => material.id === state.settings.material)) {
+        state.settings.material = DEFAULT_SETTINGS.material;
+      }
+      if (saved.lastRoll && isValidRoll(saved.lastRoll)) state.lastRoll = saved.lastRoll;
+      if (typeof saved.savedLastRollId === "string") state.savedLastRollId = saved.savedLastRollId;
+    } catch (error) {
+      console.warn("Failed to load local state", error);
+    }
+  }
+
+  function saveState() {
+    const payload = {
+      currentDice: state.currentDice,
+      nonce: state.nonce,
+      history: state.history,
+      settings: state.settings,
+      lastRoll: state.lastRoll,
+      savedLastRollId: state.savedLastRollId,
+    };
+    localStorage.setItem(STORE_KEY, JSON.stringify(payload));
+  }
+
+  function isValidRoll(item) {
+    return item && DICE_TYPES.includes(item.dice) && [1, 2, 3, 4].includes(item.result);
+  }
+
+  function isValidHistoryItem(item) {
+    return isValidRoll(item) && typeof item.id === "string" && typeof item.time === "number";
+  }
+
+  function setPage(pageName, options = {}) {
+    if (!pageName) return;
+    const target = $(`.page[data-page="${pageName}"]`);
+    if (!target) return;
+
+    state.previousPage = state.currentPage;
+    state.currentPage = pageName;
+    el.pages.forEach((page) => page.classList.toggle("active", page.dataset.page === pageName));
+    el.nav.forEach((button) => {
+      const navPage = button.dataset.nav;
+      const active = navPage === pageName || (pageName === "select" && navPage === "roll") || (pageName === "result" && navPage === "roll");
+      button.classList.toggle("active", active);
+    });
+    el.drawerLinks.forEach((button) => button.classList.toggle("active", button.dataset.drawerNav === pageName));
+    if (!options.keepDrawer) closeDrawer();
+    render();
+  }
+
+  function render() {
+    applyTheme();
+    renderDiceVisuals();
+    renderDiceGrid();
+    renderStyleGrid();
+    renderHistoryFilters();
+    renderHistory();
+    renderStats();
+    renderSettings();
+    updateRollLabels();
+  }
+
+  function updateRollLabels() {
+    el.currentDiceLabel.textContent = state.currentDice;
+    el.resultTitle.textContent = state.lastRoll ? state.lastRoll.dice : state.currentDice;
+    el.currentResult.textContent = state.lastRoll ? state.lastRoll.result : "-";
+    el.finalResult.textContent = state.lastRoll ? state.lastRoll.result : "-";
+    el.statsFilterLabel.textContent = state.statsFilter;
+    el.drawerDarkToggle.checked = state.settings.darkMode;
+  }
+
+  function renderDiceVisuals() {
+    const visuals = [el.mainDiceVisual, el.resultDiceVisual, el.stylePreviewDice].filter(Boolean);
+    visuals.forEach((visual) => {
+      const dice = visual === el.resultDiceVisual && state.lastRoll ? state.lastRoll.dice : state.currentDice;
+      visual.innerHTML = createDiceSvg(dice);
+      visual.setAttribute("aria-label", `${dice} 骰子`);
+      visual.dataset.dice = dice;
+      visual.className = `dice-icon${visual.id === "mainDiceVisual" ? " dice-icon-main" : ""}${visual.id === "resultDiceVisual" ? " result-dice" : ""}`;
+    });
+    document.querySelectorAll("[data-static-dice]").forEach((node) => {
+      node.innerHTML = createDiceSvg(node.dataset.staticDice || "D20");
+    });
+  }
+
+  function createDiceMarkup(dice) {
+    return `<div class="dice-icon dice-icon-card" role="img" aria-label="${dice} 骰子">${createDiceSvg(dice)}</div>`;
+  }
+
+  function createDiceSvg(dice) {
+    svgSeed += 1;
+    const uid = `dice${svgSeed}`;
+    const ids = {
+      edge: `edge-${uid}`,
+      left: `left-${uid}`,
+      right: `right-${uid}`,
+      body: `body-${uid}`,
+      center: `center-${uid}`,
+    };
+    const shapes = {
+      D4: `
+        <path d="M128 24 30 218h196Z" fill="url(#${ids.edge})" stroke="#eef6ff" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M128 24 30 218h98Z" fill="url(#${ids.left})" stroke="#f4f8fc" stroke-opacity=".48" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M128 24v194h98Z" fill="url(#${ids.right})" stroke="#f4f8fc" stroke-opacity=".42" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M30 218h196l-98-54Z" fill="#4e5964" opacity=".78" stroke="#f4f8fc" stroke-opacity=".32" stroke-width="2" stroke-linejoin="round"/>
+        <text x="105" y="111" fill="#252d36" font-size="42">2</text>
+        <text x="73" y="187" fill="#ffffff" font-size="38">1</text>
+        <text x="116" y="197" fill="#ffffff" font-size="52">3</text>
+        <text x="177" y="187" fill="#ffffff" font-size="38">4</text>
+      `,
+      D8: `
+        <path d="M128 18 34 128h188Z" fill="url(#${ids.edge})" stroke="#eef6ff" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M34 128 128 238V128Z" fill="url(#${ids.left})" stroke="#eef6ff" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M222 128 128 238V128Z" fill="url(#${ids.right})" stroke="#eef6ff" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M34 128h188M128 18v220" fill="none" stroke="#eef6ff" stroke-opacity=".34" stroke-width="2"/>
+        <text x="106" y="96" fill="#27303a" font-size="42">2</text>
+        <text x="68" y="164" fill="#ffffff" font-size="36">1</text>
+        <text x="116" y="188" fill="#ffffff" font-size="50">3</text>
+        <text x="174" y="164" fill="#ffffff" font-size="36">4</text>
+      `,
+      D12: `
+        <path d="M128 20 185 38 222 87 222 146 186 205 128 236 70 205 34 146 34 87 71 38Z" fill="url(#${ids.body})" stroke="#eef6ff" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M128 20 92 87 128 114 164 87Z" fill="url(#${ids.edge})" opacity=".95" stroke="#eef6ff" stroke-width="2"/>
+        <path d="M34 87 34 146 92 166 92 87Z" fill="#89949f" opacity=".84" stroke="#eef6ff" stroke-width="2"/>
+        <path d="M222 87 164 87 164 166 222 146Z" fill="#6f7a85" opacity=".84" stroke="#eef6ff" stroke-width="2"/>
+        <path d="M92 87 128 114 164 87 164 166 128 194 92 166Z" fill="url(#${ids.center})" opacity=".95" stroke="#eef6ff" stroke-width="2"/>
+        <path d="M70 205 128 236 186 205 128 194Z" fill="#242e38" opacity=".86" stroke="#eef6ff" stroke-width="2"/>
+        <text x="108" y="76" fill="#26303a" font-size="36">2</text>
+        <text x="62" y="136" fill="#ffffff" font-size="34">1</text>
+        <text x="113" y="157" fill="#ffffff" font-size="48">3</text>
+        <text x="178" y="136" fill="#ffffff" font-size="34">4</text>
+      `,
+      D20: `
+        <path d="M128 18 202 46 238 113 222 190 162 236H94L34 190 18 113 54 46Z" fill="url(#${ids.body})" stroke="#eef6ff" stroke-width="2.4" stroke-linejoin="round"/>
+        <path d="M128 18 94 86 162 86Z" fill="#f8fbff" opacity=".95" stroke="#eef6ff" stroke-width="2"/>
+        <path d="M18 113 54 46 94 86 70 146Z" fill="#a6b0bb" opacity=".82" stroke="#eef6ff" stroke-width="2"/>
+        <path d="M238 113 202 46 162 86 186 146Z" fill="#7d8894" opacity=".84" stroke="#eef6ff" stroke-width="2"/>
+        <path d="M94 86 128 116 162 86 186 146 128 205 70 146Z" fill="url(#${ids.center})" opacity=".96" stroke="#eef6ff" stroke-width="2"/>
+        <path d="M34 190 70 146 128 205 94 236Z" fill="#3f4954" opacity=".9" stroke="#eef6ff" stroke-width="2"/>
+        <path d="M222 190 162 236 128 205 186 146Z" fill="#2c3641" opacity=".92" stroke="#eef6ff" stroke-width="2"/>
+        <text x="108" y="73" fill="#26303a" font-size="36">2</text>
+        <text x="58" y="154" fill="#ffffff" font-size="35">1</text>
+        <text x="112" y="164" fill="#ffffff" font-size="52">3</text>
+        <text x="181" y="154" fill="#ffffff" font-size="35">4</text>
+      `,
+    };
+    const body = shapes[dice] || shapes.D20;
+    return `
+      <svg viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="${ids.edge}" x1="38" y1="22" x2="206" y2="232" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#ffffff"/><stop offset=".34" stop-color="#dfe7ee"/><stop offset=".68" stop-color="#8d99a5"/><stop offset="1" stop-color="#303a44"/>
+          </linearGradient>
+          <linearGradient id="${ids.left}" x1="44" y1="82" x2="128" y2="238" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#f8fbff"/><stop offset=".42" stop-color="#c4cdd6"/><stop offset="1" stop-color="#56616c"/>
+          </linearGradient>
+          <linearGradient id="${ids.right}" x1="210" y1="84" x2="122" y2="238" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#eef4fa"/><stop offset=".5" stop-color="#9faab5"/><stop offset="1" stop-color="#343e49"/>
+          </linearGradient>
+          <radialGradient id="${ids.body}" cx="38%" cy="18%" r="84%">
+            <stop stop-color="#ffffff"/><stop offset=".3" stop-color="#dce5ed"/><stop offset=".66" stop-color="#7b8691"/><stop offset="1" stop-color="#222c36"/>
+          </radialGradient>
+          <linearGradient id="${ids.center}" x1="90" y1="84" x2="166" y2="210" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#b8c2cc"/><stop offset=".55" stop-color="#616c77"/><stop offset="1" stop-color="#2b3540"/>
+          </linearGradient>
+        </defs>
+        <g filter="drop-shadow(0 16px 12px rgba(0,0,0,.45))" font-family="Arial, Helvetica, sans-serif" font-weight="800" text-anchor="start">${body}</g>
+      </svg>
+    `;
+  }
+
+  function renderDiceGrid() {
+    el.diceGrid.innerHTML = DICE_TYPES.map((dice) => {
+      const selected = dice === state.currentDice;
+      return `
+        <button class="select-card ${selected ? "selected" : ""}" type="button" data-dice-choice="${dice}" aria-label="选择 ${dice}">
+          ${selected ? '<span class="checkmark">✓</span>' : ""}
+          <strong>${dice}</strong>
+          ${createDiceMarkup(dice)}
+          <span>结果：1-4</span>
+        </button>
+      `;
+    }).join("");
+  }
+
+  function renderStyleGrid() {
+    el.styleGrid.innerHTML = MATERIALS.map((material) => {
+      const selected = material.id === state.settings.material;
+      return `
+        <button class="style-card ${selected ? "selected" : ""}" type="button" data-style-choice="${material.id}" aria-label="${material.name}">
+          ${selected ? '<span class="checkmark">✓</span>' : ""}
+          ${createDiceMarkup(state.currentDice)}
+          <strong>${material.short}</strong>
+          <span>${material.name}</span>
+        </button>
+      `;
+    }).join("");
+  }
+
+  function renderHistoryFilters() {
+    el.historyFilters.innerHTML = FILTERS.map((filter) => {
+      const active = filter === state.historyFilter;
+      return `<button type="button" class="${active ? "active" : ""}" data-history-filter="${filter}">${filter}</button>`;
+    }).join("");
+  }
+
+  function renderHistory() {
+    const items = getFilteredHistory(state.historyFilter);
+    if (!items.length) {
+      el.historyList.innerHTML = '<div class="empty-state">暂无历史记录</div>';
+      return;
+    }
+
+    el.historyList.innerHTML = items.map((item) => `
+      <article class="history-item">
+        <div class="history-dice-icon" role="img" aria-label="${item.dice} 骰子">${createDiceSvg(item.dice)}</div>
+        <div class="history-meta">
+          <strong>${item.dice}</strong>
+          <span>${item.result}</span>
+        </div>
+        <time>${formatDate(item.time)}</time>
+      </article>
+    `).join("");
+  }
+
+  function renderStats() {
+    const items = getFilteredHistory(state.statsFilter);
+    const counts = countResults(items);
+    const values = items.map((item) => item.result);
+    const total = items.length;
+    const average = total ? (values.reduce((sum, value) => sum + value, 0) / total).toFixed(2) : "0.00";
+    const min = total ? Math.min(...values) : "-";
+    const max = total ? Math.max(...values) : "-";
+    const cards = [
+      ["总掷骰次数", total],
+      ["平均值", average],
+      ["最小值", min],
+      ["最大值", max],
+      ["1出现次数", counts[1]],
+      ["2出现次数", counts[2]],
+      ["3出现次数", counts[3]],
+      ["4出现次数", counts[4]],
+    ];
+    el.statsGrid.innerHTML = cards.map(([label, value]) => `
+      <div class="stat-card">
+        <span>${label}</span>
+        <strong>${value}</strong>
+      </div>
+    `).join("");
+
+    const maxCount = Math.max(1, counts[1], counts[2], counts[3], counts[4]);
+    el.barChart.innerHTML = [1, 2, 3, 4].map((result) => {
+      const height = Math.max(4, Math.round((counts[result] / maxCount) * 100));
+      return `
+        <div class="bar-wrap">
+          <span class="bar-count">${counts[result]}</span>
+          <div class="bar" style="height:${height}%"></div>
+          <span class="bar-label">${result}</span>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderSettings() {
+    const rows = [
+      { key: "shake", title: "摇一摇掷骰", desc: "摇动手机进行掷骰", icon: "shake", type: "toggle" },
+      { key: "vibration", title: "震动反馈", desc: "掷骰结果震动提示", icon: "vibrate", type: "toggle" },
+      { key: "sound", title: "音效", desc: "掷骰音效", icon: "sound", type: "toggle" },
+      { key: "animation3d", title: "3D动画开关", desc: "显示骰子3D动画", icon: "cube", type: "toggle" },
+      { key: "style", title: "骰子样式", desc: getMaterialName(state.settings.material), icon: "style", type: "link", page: "style" },
+      { key: "darkMode", title: "深色模式", desc: "跟随系统之外的本地开关", icon: "moon", type: "toggle" },
+      { key: "clear", title: "清除历史记录", desc: "删除本地保存的掷骰记录", icon: "trash", type: "action" },
+      { key: "about", title: "关于应用", desc: "离线、本地、均分随机", icon: "info", type: "link", page: "about" },
+    ];
+
+    el.settingsList.innerHTML = rows.map((row) => `
+      <button class="setting-row" type="button" data-setting-key="${row.key}" ${row.page ? `data-setting-page="${row.page}"` : ""}>
+        ${icon(row.icon)}
+        <span>
+          <strong>${row.title}</strong>
+          <span>${row.desc}</span>
+        </span>
+        ${settingControl(row)}
+      </button>
+    `).join("");
+  }
+
+  function settingControl(row) {
+    if (row.type === "toggle") {
+      return `
+        <label class="switch" aria-label="${row.title}">
+          <input type="checkbox" data-toggle="${row.key}" ${state.settings[row.key] ? "checked" : ""} />
+          <i></i>
+        </label>
+      `;
+    }
+    if (row.type === "action") return '<span class="row-chevron"></span>';
+    return '<span class="row-chevron"></span>';
+  }
+
+  function icon(name) {
+    const paths = {
+      shake: '<path d="M7 8a5 5 0 0 0 0 8M4 5a9 9 0 0 0 0 14M17 8a5 5 0 0 1 0 8M20 5a9 9 0 0 1 0 14" /><path d="M10 7h4v10h-4z" />',
+      vibrate: '<path d="M8 7h8v10H8z" /><path d="M4 9v6M20 9v6M2 11v2M22 11v2" />',
+      sound: '<path d="M11 5 6 9H3v6h3l5 4V5Z" /><path d="M15.5 8.5a5 5 0 0 1 0 7" />',
+      cube: '<path d="M12 2 4 6.5v11L12 22l8-4.5v-11L12 2Z" /><path d="m4 6.5 8 4.5 8-4.5M12 11v11" />',
+      style: '<path d="M12 3 4 7.5v9L12 21l8-4.5v-9L12 3Z" /><path d="M8 10h.01M16 10h.01M12 15h.01" />',
+      moon: '<path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.6 6.6 0 0 0 21 12.8Z" />',
+      trash: '<path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15" /><path d="M10 11v6M14 11v6" />',
+      info: '<path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" /><path d="M12 16v-4M12 8h.01" />',
+    };
+    return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.info}</svg>`;
+  }
+
+  function getFilteredHistory(filter) {
+    const items = filter === "全部" ? state.history : state.history.filter((item) => item.dice === filter);
+    return [...items].sort((a, b) => b.time - a.time);
+  }
+
+  function countResults(items) {
+    return items.reduce((counts, item) => {
+      counts[item.result] += 1;
+      return counts;
+    }, { 1: 0, 2: 0, 3: 0, 4: 0 });
+  }
+
+  function getMaterialName(id) {
+    return MATERIALS.find((material) => material.id === id)?.name || MATERIALS[0].name;
+  }
+
+  async function rollDice(eventLike = {}) {
+    updatePointerFromEvent(eventLike);
+    const rollButton = $("#rollButton");
+    const diceVisuals = [el.mainDiceVisual, el.resultDiceVisual].filter(Boolean);
+    diceVisuals.forEach((visual) => {
+      visual.classList.toggle("rolling", state.settings.animation3d);
+      visual.addEventListener("animationend", () => visual.classList.remove("rolling"), { once: true });
+    });
+    rollButton.disabled = true;
+
+    const result = await randomResult(state.currentDice);
+    const now = Date.now();
+    state.lastRoll = {
+      id: createId(),
+      dice: state.currentDice,
+      result,
+      time: now,
+    };
+    autoSaveLastRoll();
+    updateRollLabels();
+
+    if (state.settings.vibration && navigator.vibrate) navigator.vibrate([18, 28, 22]);
+    if (state.settings.sound) playRollSound();
+    setTimeout(() => {
+      rollButton.disabled = false;
+      setPage("result");
+      showAutoSaveHint();
+    }, state.settings.animation3d ? 520 : 80);
+  }
+
+  async function randomResult(dice) {
+    const faces = DICE_FACES[dice] || DICE_FACES.D20;
+    state.nonce += 1;
+    const entropy = collectEntropy();
+    saveState();
+
+    try {
+      if (window.crypto?.subtle?.digest) {
+        const text = JSON.stringify(entropy);
+        const bytes = new TextEncoder().encode(text);
+        const digest = await crypto.subtle.digest("SHA-256", bytes);
+        const index = hashToModulo(new Uint8Array(digest), faces.length);
+        return faces[index];
+      }
+    } catch (error) {
+      console.warn("SHA-256 random path failed", error);
+    }
+
+    const digest = sha256Bytes(JSON.stringify(entropy));
+    return faces[hashToModulo(digest, faces.length)];
+  }
+
+  function collectEntropy() {
+    const randomWords = new Uint32Array(8);
+    if (window.crypto?.getRandomValues) {
+      crypto.getRandomValues(randomWords);
+    } else {
+      for (let index = 0; index < randomWords.length; index += 1) {
+        randomWords[index] = fallbackEntropyWord(index);
+      }
+    }
+
+    return {
+      randomWords: Array.from(randomWords),
+      dateNow: Date.now(),
+      performanceNow: performance.now(),
+      clientX: state.lastPointer.clientX,
+      clientY: state.lastPointer.clientY,
+      touchX: state.lastPointer.touchX,
+      touchY: state.lastPointer.touchY,
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      devicePixelRatio: window.devicePixelRatio || 1,
+      nonce: state.nonce,
+    };
+  }
+
+  function hashToModulo(bytes, modulo) {
+    let value = 0n;
+    for (let index = 0; index < 8; index += 1) {
+      value = (value << 8n) + BigInt(bytes[index]);
+    }
+    return Number(value % BigInt(modulo));
+  }
+
+  function fallbackEntropyWord(index) {
+    const value = `${Date.now()}|${performance.now()}|${state.nonce}|${index}|${window.innerWidth}|${window.innerHeight}|${state.lastPointer.clientX}|${state.lastPointer.clientY}`;
+    let hash = 2166136261;
+    for (let cursor = 0; cursor < value.length; cursor += 1) {
+      hash ^= value.charCodeAt(cursor);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+
+  function sha256Bytes(message) {
+    const rightRotate = (value, amount) => (value >>> amount) | (value << (32 - amount));
+    const mathPow = Math.pow;
+    const maxWord = mathPow(2, 32);
+    const words = [];
+    const hash = [];
+    const k = [];
+    let primeCounter = 0;
+    let candidate = 2;
+
+    const isPrime = (number) => {
+      const limit = Math.sqrt(number);
+      for (let factor = 2; factor <= limit; factor += 1) {
+        if (number % factor === 0) return false;
+      }
+      return true;
+    };
+
+    while (primeCounter < 64) {
+      if (isPrime(candidate)) {
+        if (primeCounter < 8) hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
+        k[primeCounter] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+        primeCounter += 1;
+      }
+      candidate += 1;
+    }
+
+    const encoded = unescape(encodeURIComponent(message));
+    const length = encoded.length;
+    for (let index = 0; index < length; index += 1) {
+      words[index >> 2] |= encoded.charCodeAt(index) << ((3 - index) % 4) * 8;
+    }
+    words[length >> 2] |= 0x80 << ((3 - length) % 4) * 8;
+    words[((length + 8) >> 6 << 4) + 15] = length * 8;
+
+    for (let block = 0; block < words.length; block += 16) {
+      const w = words.slice(block, block + 16);
+      const oldHash = hash.slice(0);
+      for (let index = 0; index < 64; index += 1) {
+        const w15 = w[index - 15];
+        const w2 = w[index - 2];
+        const a = hash[0];
+        const e = hash[4];
+        const temp1 = hash[7]
+          + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+          + ((e & hash[5]) ^ (~e & hash[6]))
+          + k[index]
+          + (w[index] = index < 16 ? w[index] : (
+            w[index - 16]
+            + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+            + w[index - 7]
+            + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+          ) | 0);
+        const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+          + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+
+        hash[7] = hash[6];
+        hash[6] = hash[5];
+        hash[5] = hash[4];
+        hash[4] = (hash[3] + temp1) | 0;
+        hash[3] = hash[2];
+        hash[2] = hash[1];
+        hash[1] = hash[0];
+        hash[0] = (temp1 + temp2) | 0;
+      }
+
+      for (let index = 0; index < 8; index += 1) {
+        hash[index] = (hash[index] + oldHash[index]) | 0;
+      }
+    }
+
+    const output = new Uint8Array(32);
+    for (let index = 0; index < 8; index += 1) {
+      output[index * 4] = (hash[index] >>> 24) & 255;
+      output[index * 4 + 1] = (hash[index] >>> 16) & 255;
+      output[index * 4 + 2] = (hash[index] >>> 8) & 255;
+      output[index * 4 + 3] = hash[index] & 255;
+    }
+    return output;
+  }
+
+  function autoSaveLastRoll() {
+    if (!state.lastRoll || state.savedLastRollId === state.lastRoll.id) return;
+    state.history.unshift({ ...state.lastRoll });
+    state.history = state.history.slice(0, 500);
+    state.savedLastRollId = state.lastRoll.id;
+    saveState();
+    renderHistory();
+    renderStats();
+  }
+
+  function showAutoSaveHint() {
+    if (!el.autoSaveHint) return;
+    el.autoSaveHint.classList.add("show");
+    clearTimeout(showAutoSaveHint.timer);
+    showAutoSaveHint.timer = setTimeout(() => {
+      el.autoSaveHint.classList.remove("show");
+    }, 2000);
+  }
+
+  function clearHistory() {
+    state.history = [];
+    state.savedLastRollId = null;
+    saveState();
+    renderHistory();
+    renderStats();
+    showToast("历史记录已清空");
+  }
+
+  function updatePointerFromEvent(eventLike) {
+    const event = eventLike || {};
+    const touch = event.touches?.[0] || event.changedTouches?.[0];
+    if (touch) {
+      state.lastPointer.touchX = Math.round(touch.clientX);
+      state.lastPointer.touchY = Math.round(touch.clientY);
+      state.lastPointer.clientX = Math.round(touch.clientX);
+      state.lastPointer.clientY = Math.round(touch.clientY);
+      return;
+    }
+    if (Number.isFinite(event.clientX)) state.lastPointer.clientX = Math.round(event.clientX);
+    if (Number.isFinite(event.clientY)) state.lastPointer.clientY = Math.round(event.clientY);
+  }
+
+  function createId() {
+    return `${Date.now().toString(36)}-${state.nonce.toString(36)}-${performance.now().toString(36).replace(".", "")}`;
+  }
+
+  function formatDate(time) {
+    const date = new Date(time);
+    const pad = (value) => String(value).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  }
+
+  function showToast(message) {
+    el.toast.textContent = message;
+    el.toast.classList.add("show");
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => el.toast.classList.remove("show"), 1800);
+  }
+
+  function playRollSound() {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const context = state.audioContext || new AudioContext();
+      state.audioContext = context;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = "triangle";
+      oscillator.frequency.setValueAtTime(220, context.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(420, context.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.0001, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.12, context.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.16);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.18);
+    } catch (error) {
+      console.warn("Audio unavailable", error);
+    }
+  }
+
+  function applyTheme() {
+    document.documentElement.classList.toggle("light-mode", !state.settings.darkMode);
+    document.body.classList.toggle("light-mode", !state.settings.darkMode);
+  }
+
+  function openDrawer() {
+    state.drawerOpen = true;
+    el.drawer.classList.add("open");
+    el.drawer.setAttribute("aria-hidden", "false");
+  }
+
+  function closeDrawer() {
+    state.drawerOpen = false;
+    el.drawer.classList.remove("open");
+    el.drawer.setAttribute("aria-hidden", "true");
+  }
+
+  function toggleSetting(key, forcedValue) {
+    if (!(key in state.settings)) return;
+    state.settings[key] = typeof forcedValue === "boolean" ? forcedValue : !state.settings[key];
+    saveState();
+    render();
+  }
+
+  function bindEvents() {
+    document.addEventListener("pointerdown", updatePointerFromEvent, { passive: true });
+    document.addEventListener("touchstart", updatePointerFromEvent, { passive: true });
+    document.addEventListener("touchmove", updatePointerFromEvent, { passive: true });
+
+    $("#rollButton").addEventListener("click", rollDice);
+    $("#rerollButton").addEventListener("click", rollDice);
+    $("#soundPreviewButton").addEventListener("click", playRollSound);
+    $("#dicePickerButton").addEventListener("click", () => setPage("select"));
+    $("#stageDiceButton").addEventListener("click", () => setPage("select"));
+    $("#quickSettingsButton").addEventListener("click", () => setPage("settings"));
+    $("#menuButton").addEventListener("click", openDrawer);
+    $("#drawerSettingsButton").addEventListener("click", () => setPage("settings"));
+    el.drawerScrim.addEventListener("click", closeDrawer);
+    $("#clearHistoryButton").addEventListener("click", clearHistory);
+    $("#filterFocusButton").addEventListener("click", () => showToast(`当前筛选：${state.historyFilter}`));
+
+    $("#statsDiceButton").addEventListener("click", () => {
+      const index = FILTERS.indexOf(state.statsFilter);
+      state.statsFilter = FILTERS[(index + 1) % FILTERS.length];
+      renderStats();
+      updateRollLabels();
+    });
+
+    el.drawerDarkToggle.addEventListener("change", (event) => {
+      toggleSetting("darkMode", event.target.checked);
+    });
+
+    document.addEventListener("click", (event) => {
+      const navButton = event.target.closest("[data-nav]");
+      if (navButton) setPage(navButton.dataset.nav);
+
+      const drawerNav = event.target.closest("[data-drawer-nav]");
+      if (drawerNav) setPage(drawerNav.dataset.drawerNav);
+
+      const backButton = event.target.closest("[data-back]");
+      if (backButton) setPage(backButton.dataset.back || "roll");
+
+      const diceChoice = event.target.closest("[data-dice-choice]");
+      if (diceChoice) {
+        state.currentDice = diceChoice.dataset.diceChoice;
+        saveState();
+        setPage("roll");
+        showToast(`已选择 ${state.currentDice}`);
+      }
+
+      const styleChoice = event.target.closest("[data-style-choice]");
+      if (styleChoice) {
+        state.settings.material = styleChoice.dataset.styleChoice;
+        saveState();
+        render();
+        showToast(getMaterialName(state.settings.material));
+      }
+
+      const historyFilter = event.target.closest("[data-history-filter]");
+      if (historyFilter) {
+        state.historyFilter = historyFilter.dataset.historyFilter;
+        renderHistoryFilters();
+        renderHistory();
+      }
+
+      const settingRow = event.target.closest("[data-setting-key]");
+      if (settingRow) handleSettingClick(event, settingRow);
+    });
+
+    bindLongPress($("#rollButton"), rollDice);
+    bindLongPress($("#stageDiceButton"), rollDice);
+    bindShake();
+  }
+
+  function handleSettingClick(event, row) {
+    const key = row.dataset.settingKey;
+    const toggle = event.target.closest("[data-toggle]");
+    if (toggle) {
+      toggleSetting(toggle.dataset.toggle, toggle.checked);
+      return;
+    }
+    if (key === "clear") {
+      clearHistory();
+      return;
+    }
+    const page = row.dataset.settingPage;
+    if (page) {
+      setPage(page);
+      return;
+    }
+    if (key in state.settings) toggleSetting(key);
+  }
+
+  function bindLongPress(target, callback) {
+    if (!target) return;
+    let timer = null;
+    target.addEventListener("pointerdown", (event) => {
+      state.suppressNextClick = false;
+      timer = setTimeout(() => {
+        state.suppressNextClick = true;
+        callback(event);
+      }, LONG_PRESS_MS);
+    });
+    target.addEventListener("click", (event) => {
+      if (!state.suppressNextClick) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      state.suppressNextClick = false;
+    }, true);
+    target.addEventListener("pointerup", () => {
+      clearTimeout(timer);
+      timer = null;
+      setTimeout(() => {
+        state.suppressNextClick = false;
+      }, 0);
+    });
+    ["pointercancel", "pointerleave"].forEach((type) => {
+      target.addEventListener(type, () => {
+        clearTimeout(timer);
+        timer = null;
+        state.suppressNextClick = false;
+      });
+    });
+  }
+
+  function bindShake() {
+    let last = { x: 0, y: 0, z: 0, time: 0 };
+    window.addEventListener("devicemotion", (event) => {
+      if (!state.settings.shake || state.shakeLock) return;
+      const acc = event.accelerationIncludingGravity;
+      if (!acc) return;
+      const now = Date.now();
+      if (now - last.time < 240) return;
+      const delta = Math.abs(acc.x - last.x) + Math.abs(acc.y - last.y) + Math.abs(acc.z - last.z);
+      last = { x: acc.x || 0, y: acc.y || 0, z: acc.z || 0, time: now };
+      if (delta > 28) {
+        state.shakeLock = true;
+        rollDice({ clientX: state.lastPointer.clientX, clientY: state.lastPointer.clientY });
+        setTimeout(() => {
+          state.shakeLock = false;
+        }, 1200);
+      }
+    }, { passive: true });
+  }
+
+  loadState();
+  bindEvents();
+  render();
+}());
+
+    </script>
+  </body>
+</html>
