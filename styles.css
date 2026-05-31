@@ -1,265 +1,1183 @@
-<!doctype html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#08111c" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>随机骰子工具 · 多面骰</title>
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <div class="app-shell">
-      <header class="topbar" aria-label="应用顶部栏">
-        <button class="icon-button" id="menuButton" type="button" aria-label="打开侧边菜单">
-          <span class="hamburger"></span>
-        </button>
-        <button class="dice-picker" id="dicePickerButton" type="button" aria-label="选择骰子">
-          <span id="currentDiceLabel">D20</span>
-          <span class="chevron"></span>
-        </button>
-        <button class="icon-button" id="quickSettingsButton" type="button" aria-label="打开设置">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
-            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 0 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L4.2 7A2 2 0 0 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 0 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
-          </svg>
-        </button>
-      </header>
+:root {
+  color-scheme: dark;
+  --bg: #07111d;
+  --bg-2: #0a1827;
+  --panel: rgba(12, 28, 43, 0.72);
+  --panel-strong: rgba(16, 35, 53, 0.9);
+  --line: rgba(142, 196, 255, 0.22);
+  --line-strong: rgba(126, 190, 255, 0.78);
+  --text: #f5f8fc;
+  --muted: rgba(226, 237, 250, 0.7);
+  --soft: rgba(226, 237, 250, 0.48);
+  --ice: #74bdff;
+  --ice-2: #b9e5ff;
+  --danger: #ff655b;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  --radius: 18px;
+  --nav-height: 76px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
 
-      <main class="page-stack" id="pageStack">
-        <section class="page page-home active" data-page="roll" aria-labelledby="rollTitle">
-          <div class="page-title compact">
-            <p>1. 首页 - 掷骰</p>
-            <h1 id="rollTitle">随机骰子工具</h1>
-          </div>
-          <div class="orbital-field" aria-hidden="true">
-            <span></span><span></span><span></span>
-          </div>
-          <button class="dice-stage" id="stageDiceButton" type="button" aria-label="打开骰子选择">
-            <img class="dice-icon dice-icon-main" id="mainDiceVisual" src="./assets/dice-d20.svg" alt="D20 骰子" />
-          </button>
-          <div class="result-panel" aria-live="polite">
-            <span>当前结果</span>
-            <strong id="currentResult">-</strong>
-          </div>
-          <button class="primary-pill" id="rollButton" type="button">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 2 4 6.5v11L12 22l8-4.5v-11L12 2Z" />
-              <path d="m4 6.5 8 4.5 8-4.5M12 11v11" />
-              <path d="M9 7h.01M15 7h.01M12 16h.01" />
-            </svg>
-            开始掷骰
-          </button>
-        </section>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
 
-        <section class="page page-select" data-page="select" aria-labelledby="selectTitle">
-          <div class="subpage-head">
-            <button class="icon-button back-button" type="button" data-back="roll" aria-label="返回">
-              <span class="back-mark"></span>
-            </button>
-            <div>
-              <p>2. 骰子选择</p>
-              <h2 id="selectTitle">选择骰子</h2>
-            </div>
-          </div>
-          <div class="dice-grid" id="diceGrid"></div>
-        </section>
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #050b13;
+  color: var(--text);
+}
 
-        <section class="page page-result" data-page="result" aria-labelledby="resultTitle">
-          <div class="subpage-head">
-            <button class="icon-button back-button" type="button" data-back="roll" aria-label="返回">
-              <span class="back-mark"></span>
-            </button>
-            <div>
-              <p>3. 掷骰结果</p>
-              <h2 id="resultTitle">D20</h2>
-            </div>
-            <button class="icon-button" id="soundPreviewButton" type="button" aria-label="音效">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M11 5 6 9H3v6h3l5 4V5Z" />
-                <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
-              </svg>
-            </button>
-          </div>
-          <div class="result-showcase">
-            <div class="orbital-field large" aria-hidden="true">
-              <span></span><span></span><span></span>
-            </div>
-            <img class="dice-icon result-dice" id="resultDiceVisual" src="./assets/dice-d20.svg" alt="D20 骰子" />
-            <div class="final-result">
-              <span>结果：</span><strong id="finalResult">-</strong>
-            </div>
-            <div class="auto-save-hint" id="autoSaveHint" aria-live="polite">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m5 12 4 4 10-10" />
-              </svg>
-              <span>已自动保存到历史记录</span>
-            </div>
-          </div>
-          <div class="action-row single">
-            <button class="primary-pill" id="rerollButton" type="button">重新掷骰</button>
-          </div>
-        </section>
+body {
+  background:
+    radial-gradient(circle at 50% 12%, rgba(91, 160, 222, 0.18), transparent 28%),
+    radial-gradient(circle at 18% 0%, rgba(130, 190, 255, 0.12), transparent 30%),
+    linear-gradient(155deg, #07111d 0%, #091522 45%, #03070d 100%);
+}
 
-        <section class="page" data-page="history" aria-labelledby="historyTitle">
-          <div class="subpage-head inline">
-            <div>
-              <p>4. 历史记录</p>
-              <h2 id="historyTitle">历史记录</h2>
-            </div>
-            <button class="icon-button" id="filterFocusButton" type="button" aria-label="筛选">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M3 5h18l-7 8v5l-4 2v-7L3 5Z" />
-              </svg>
-            </button>
-          </div>
-          <div class="segmented" id="historyFilters" role="tablist" aria-label="历史筛选"></div>
-          <div class="history-list" id="historyList"></div>
-          <button class="danger-action" id="clearHistoryButton" type="button">清空记录</button>
-        </section>
+button,
+input {
+  font: inherit;
+}
 
-        <section class="page" data-page="stats" aria-labelledby="statsTitle">
-          <div class="subpage-head">
-            <button class="icon-button back-button" type="button" data-back="roll" aria-label="返回">
-              <span class="back-mark"></span>
-            </button>
-            <div>
-              <p>5. 统计分析</p>
-              <h2 id="statsTitle">统计分析</h2>
-            </div>
-          </div>
-          <div class="stats-filter">
-            <button class="dice-picker mini" id="statsDiceButton" type="button">
-              <span id="statsFilterLabel">全部</span>
-              <span class="chevron"></span>
-            </button>
-          </div>
-          <div class="stats-grid" id="statsGrid"></div>
-          <div class="chart-panel">
-            <div class="chart-head">
-              <h3>结果分布（1-4均分）</h3>
-              <span>出现次数</span>
-            </div>
-            <div class="bar-chart" id="barChart"></div>
-            <p>每个结果理论概率：25%</p>
-          </div>
-        </section>
+button {
+  color: inherit;
+  border: 0;
+  cursor: pointer;
+}
 
-        <section class="page" data-page="settings" aria-labelledby="settingsTitle">
-          <div class="subpage-head">
-            <button class="icon-button back-button" type="button" data-back="roll" aria-label="返回">
-              <span class="back-mark"></span>
-            </button>
-            <div>
-              <p>6. 设置</p>
-              <h2 id="settingsTitle">设置</h2>
-            </div>
-          </div>
-          <div class="settings-list" id="settingsList"></div>
-        </section>
+.app-shell {
+  position: relative;
+  width: min(100vw, 520px);
+  height: 100dvh;
+  margin: 0 auto;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(104, 176, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(104, 176, 255, 0.035) 1px, transparent 1px),
+    radial-gradient(circle at 50% 36%, rgba(43, 146, 255, 0.12), transparent 36%),
+    linear-gradient(180deg, rgba(8, 20, 32, 0.94), rgba(4, 10, 17, 0.98));
+  background-size: 28px 28px, 28px 28px, auto, auto;
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.42);
+}
 
-        <section class="page page-style" data-page="style" aria-labelledby="styleTitle">
-          <div class="subpage-head">
-            <button class="icon-button back-button" type="button" data-back="settings" aria-label="返回">
-              <span class="back-mark"></span>
-            </button>
-            <div>
-              <p>7. 骰子样式</p>
-              <h2 id="styleTitle">骰子样式</h2>
-            </div>
-          </div>
-          <div class="style-preview">
-            <img class="dice-icon" id="stylePreviewDice" src="./assets/dice-d20.svg" alt="D20 骰子" />
-          </div>
-          <div class="style-grid" id="styleGrid"></div>
-        </section>
+.app-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(124, 196, 255, 0.95) 0 1px, transparent 1.5px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.5) 0 1px, transparent 1.5px);
+  background-position: 18% 18%, 82% 33%;
+  background-size: 104px 128px, 156px 142px;
+  opacity: 0.2;
+}
 
-        <section class="page" data-page="about" aria-labelledby="aboutTitle">
-          <div class="subpage-head">
-            <button class="icon-button back-button" type="button" data-back="settings" aria-label="返回">
-              <span class="back-mark"></span>
-            </button>
-            <div>
-              <p>关于应用</p>
-              <h2 id="aboutTitle">随机骰子工具</h2>
-            </div>
-          </div>
-          <div class="about-panel">
-            <div class="app-mark">
-              <img class="mini-dice-icon" src="./assets/dice-d20.svg" alt="" />
-            </div>
-            <h3>多面骰（1-4均分版）</h3>
-            <p>这是一个离线本地随机结果生成工具。D4、D8、D12、D20 仅代表外观造型，最终结果始终为 1、2、3、4，理论概率各 25%。</p>
-            <p>记录与偏好仅保存在当前浏览器的 localStorage 中，不需要服务器、账号或联网功能。</p>
-          </div>
-        </section>
-      </main>
+.topbar {
+  position: absolute;
+  z-index: 20;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: calc(62px + var(--safe-top));
+  padding: calc(12px + var(--safe-top)) 18px 8px;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: 10px;
+}
 
-      <nav class="bottom-nav" aria-label="底部导航">
-        <button type="button" data-nav="roll" class="active">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 2 4 6.5v11L12 22l8-4.5v-11L12 2Z" />
-            <path d="m4 6.5 8 4.5 8-4.5M12 11v11" />
-          </svg>
-          <span>掷骰</span>
-        </button>
-        <button type="button" data-nav="history">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M8 3v3M16 3v3M4 9h16M5 5h14v16H5z" />
-            <path d="m9 14 2 2 4-5" />
-          </svg>
-          <span>历史</span>
-        </button>
-        <button type="button" data-nav="stats">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 20V10M12 20V4M19 20v-7" />
-          </svg>
-          <span>统计</span>
-        </button>
-        <button type="button" data-nav="settings">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
-            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 0 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L4.2 7A2 2 0 0 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 0 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
-          </svg>
-          <span>设置</span>
-        </button>
-      </nav>
-    </div>
+.icon-button {
+  width: 44px;
+  height: 44px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text);
+}
 
-    <aside class="side-drawer" id="sideDrawer" aria-hidden="true">
-      <div class="drawer-scrim" id="drawerScrim"></div>
-      <div class="drawer-panel">
-        <div class="drawer-profile">
-          <img class="mini-dice-icon" src="./assets/dice-d20.svg" alt="" />
-          <div>
-            <strong>随机骰子工具</strong>
-            <span>多面骰 · 离线 · 随机</span>
-          </div>
-          <button class="icon-button" id="drawerSettingsButton" type="button" aria-label="设置">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
-              <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 0 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L4.2 7A2 2 0 0 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 0 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
-            </svg>
-          </button>
-        </div>
-        <div class="drawer-links">
-          <button type="button" data-drawer-nav="roll">掷骰</button>
-          <button type="button" data-drawer-nav="history">历史记录</button>
-          <button type="button" data-drawer-nav="stats">统计分析</button>
-          <button type="button" data-drawer-nav="style">骰子样式</button>
-          <button type="button" data-drawer-nav="settings">设置</button>
-          <button type="button" data-drawer-nav="about">关于应用</button>
-        </div>
-        <label class="drawer-toggle">
-          <span>深色模式</span>
-          <input type="checkbox" id="drawerDarkToggle" />
-          <i></i>
-        </label>
-      </div>
-    </aside>
+.icon-button svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./app.js"></script>
-  </body>
-</html>
+.hamburger,
+.hamburger::before,
+.hamburger::after {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.hamburger {
+  position: relative;
+}
+
+.hamburger::before,
+.hamburger::after {
+  content: "";
+  position: absolute;
+  left: 0;
+}
+
+.hamburger::before {
+  top: -7px;
+}
+
+.hamburger::after {
+  top: 7px;
+}
+
+.back-mark {
+  width: 15px;
+  height: 15px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.dice-picker {
+  min-height: 44px;
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: rgba(16, 34, 52, 0.58);
+  box-shadow: inset 0 0 0 1px rgba(154, 207, 255, 0.13);
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.dice-picker.mini {
+  min-height: 38px;
+  padding-inline: 16px;
+  font-size: 14px;
+}
+
+.chevron {
+  width: 8px;
+  height: 8px;
+  border-right: 1.8px solid currentColor;
+  border-bottom: 1.8px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+}
+
+.page-stack {
+  position: relative;
+  height: 100%;
+  padding: calc(76px + var(--safe-top)) 16px calc(var(--nav-height) + var(--safe-bottom) + 18px);
+}
+
+.page {
+  position: absolute;
+  inset: calc(76px + var(--safe-top)) 16px calc(var(--nav-height) + var(--safe-bottom) + 18px);
+  display: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  animation: pageIn 190ms ease-out;
+}
+
+.page::-webkit-scrollbar {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+.page-home.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.7dvh, 16px);
+  overflow: hidden;
+  padding-bottom: 146px;
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-title {
+  text-align: center;
+}
+
+.page-title.compact {
+  margin-top: -8px;
+}
+
+.page-home .page-title p {
+  display: none;
+}
+
+.page-home .page-title h1 {
+  font-size: clamp(22px, 5.4vw, 30px);
+}
+
+.page-title p,
+.subpage-head p {
+  margin: 0 0 4px;
+  color: var(--ice-2);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.page-title h1,
+.subpage-head h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.subpage-head {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  min-height: 52px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.subpage-head.inline {
+  grid-template-columns: 1fr 44px;
+}
+
+.subpage-head > div {
+  grid-column: 2;
+}
+
+.subpage-head.inline > div {
+  grid-column: 1;
+  text-align: center;
+  padding-left: 44px;
+}
+
+.orbital-field {
+  position: absolute;
+  left: 50%;
+  top: clamp(210px, 42dvh, 270px);
+  width: min(72vw, 300px);
+  aspect-ratio: 1 / 0.42;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(101, 186, 255, 0.32);
+  box-shadow:
+    0 0 12px rgba(93, 177, 255, 0.42),
+    inset 0 0 18px rgba(93, 177, 255, 0.18);
+  pointer-events: none;
+}
+
+.orbital-field.large {
+  top: 180px;
+  width: min(72vw, 320px);
+}
+
+.orbital-field span {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  border: 1px solid rgba(110, 190, 255, 0.16);
+}
+
+.orbital-field span:nth-child(2) {
+  inset: 23%;
+}
+
+.orbital-field span:nth-child(3) {
+  inset: -10% 6%;
+}
+
+.dice-stage {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  min-height: clamp(126px, 29dvh, 210px);
+  margin-top: 10px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+}
+
+.page-home .dice-stage {
+  height: clamp(132px, 29dvh, 210px);
+  min-height: 0;
+  margin-top: 0;
+}
+
+.dice-icon {
+  width: min(44vw, 180px);
+  height: min(44vw, 180px);
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 26px 28px rgba(0, 0, 0, 0.58)) drop-shadow(0 0 18px rgba(137, 204, 255, 0.2));
+  transform-origin: 50% 50%;
+  transition: transform 240ms ease, filter 240ms ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.dice-icon.rolling {
+  animation: diceImageRoll 720ms cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+
+@keyframes diceImageRoll {
+  0% {
+    transform: rotate(0deg) scale(1);
+    filter: drop-shadow(0 26px 28px rgba(0, 0, 0, 0.58)) drop-shadow(0 0 14px rgba(137, 204, 255, 0.18));
+  }
+  38% {
+    transform: rotate(145deg) scale(1.08);
+    filter: drop-shadow(0 28px 30px rgba(0, 0, 0, 0.56)) drop-shadow(0 0 26px rgba(137, 204, 255, 0.46));
+  }
+  72% {
+    transform: rotate(292deg) scale(0.98);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    filter: drop-shadow(0 26px 28px rgba(0, 0, 0, 0.58)) drop-shadow(0 0 18px rgba(137, 204, 255, 0.2));
+  }
+}
+
+.page-home .dice-icon {
+  width: min(34vw, 142px, 24dvh);
+  height: min(34vw, 142px, 24dvh);
+}
+
+.result-panel {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  margin: -6px 0 18px;
+}
+
+.page-home .result-panel {
+  margin: -4px 0 0;
+}
+
+.result-panel span {
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.result-panel strong {
+  min-height: 54px;
+  font-size: clamp(42px, 7dvh, 56px);
+  line-height: 1;
+}
+
+.primary-pill,
+.secondary-pill {
+  min-height: 56px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: white;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.025)),
+    rgba(29, 55, 80, 0.52);
+  box-shadow:
+    inset 0 0 0 1px rgba(190, 225, 255, 0.92),
+    inset 0 0 24px rgba(106, 178, 255, 0.2),
+    0 0 20px rgba(112, 190, 255, 0.28);
+  backdrop-filter: blur(18px);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.primary-pill {
+  width: min(78vw, 280px);
+  margin: 0 auto;
+  display: flex;
+}
+
+.page-home #rollButton {
+  position: fixed;
+  z-index: 35;
+  left: 50%;
+  bottom: calc(96px + var(--safe-bottom));
+  transform: translateX(-50%);
+  width: min(calc(100vw - 64px), 340px);
+}
+
+.primary-pill svg,
+.secondary-pill svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.secondary-pill {
+  min-height: 52px;
+  padding: 0 20px;
+  font-size: 15px;
+  box-shadow:
+    inset 0 0 0 1px rgba(151, 204, 255, 0.25),
+    inset 0 0 18px rgba(106, 178, 255, 0.11);
+}
+
+.dice-grid,
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.select-card,
+.style-card {
+  position: relative;
+  min-height: 160px;
+  padding: 12px;
+  display: grid;
+  justify-items: center;
+  align-content: space-between;
+  gap: 8px;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01)),
+    rgba(11, 25, 39, 0.76);
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.14);
+}
+
+.select-card.selected,
+.style-card.selected {
+  box-shadow:
+    inset 0 0 0 1.5px var(--line-strong),
+    0 0 18px rgba(103, 181, 255, 0.13);
+}
+
+.select-card .dice-icon-card,
+.style-card .dice-icon-card {
+  width: 82px;
+  height: 82px;
+  filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.42)) drop-shadow(0 0 10px rgba(137, 204, 255, 0.16));
+}
+
+.select-card strong,
+.style-card strong {
+  font-size: 18px;
+}
+
+.select-card span,
+.style-card span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.checkmark {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #7dbfff, #3e7fca);
+  box-shadow: 0 0 12px rgba(100, 180, 255, 0.45);
+  font-weight: 900;
+}
+
+.result-showcase {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  padding-top: 24px;
+}
+
+.result-dice {
+  width: min(47vw, 190px);
+  height: min(47vw, 190px);
+  margin: 16px 0 24px;
+}
+
+.final-result {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.final-result strong {
+  font-size: 42px;
+}
+
+.auto-save-hint {
+  min-height: 24px;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: rgba(226, 237, 250, 0.52);
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.auto-save-hint.show {
+  opacity: 1;
+}
+
+.auto-save-hint svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.action-row.single {
+  display: flex;
+  justify-content: center;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  min-height: 42px;
+  padding: 4px;
+  border-radius: 11px;
+  background: rgba(8, 20, 33, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(139, 197, 255, 0.12);
+}
+
+.segmented button {
+  min-height: 34px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.segmented button.active {
+  color: white;
+  background: linear-gradient(180deg, rgba(139, 193, 255, 0.42), rgba(72, 130, 206, 0.62));
+}
+
+.history-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  min-height: 230px;
+}
+
+.history-item {
+  display: grid;
+  grid-template-columns: 46px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 62px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(13, 29, 45, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(150, 202, 255, 0.09);
+}
+
+.history-dice-icon {
+  width: 38px;
+  height: 38px;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.38));
+}
+
+.history-meta {
+  display: grid;
+  gap: 2px;
+}
+
+.history-meta strong {
+  font-size: 13px;
+}
+
+.history-meta span {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.history-item time {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.empty-state {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  text-align: center;
+  border-radius: 8px;
+  background: rgba(12, 28, 43, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.08);
+}
+
+.danger-action {
+  width: 100%;
+  min-height: 52px;
+  margin: 18px 0 4px;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--danger);
+  font-weight: 800;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.stats-filter {
+  display: grid;
+  place-items: center;
+  margin: -6px 0 12px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.stat-card {
+  min-height: 76px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  border-radius: 8px;
+  background: rgba(12, 28, 43, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.1);
+}
+
+.stat-card span {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.stat-card strong {
+  font-size: 22px;
+}
+
+.chart-panel,
+.about-panel {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(12, 28, 43, 0.68);
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.12);
+}
+
+.chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chart-head h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.chart-head span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.bar-chart {
+  height: 220px;
+  margin: 16px 0 6px;
+  padding: 0 8px 18px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: end;
+  gap: 14px;
+  border-left: 1px solid rgba(151, 204, 255, 0.18);
+  border-bottom: 1px solid rgba(151, 204, 255, 0.18);
+  background:
+    linear-gradient(rgba(151, 204, 255, 0.07) 1px, transparent 1px);
+  background-size: 100% 25%;
+}
+
+.bar-wrap {
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  height: 100%;
+  gap: 6px;
+}
+
+.bar {
+  width: min(12vw, 36px);
+  min-height: 4px;
+  border-radius: 5px 5px 0 0;
+  background: linear-gradient(180deg, #8fc8ff, #4b85d6);
+  box-shadow: 0 0 16px rgba(99, 174, 255, 0.26);
+}
+
+.bar-label {
+  font-size: 12px;
+}
+
+.bar-count {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.chart-panel p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+}
+
+.settings-list {
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(10, 25, 40, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.11);
+}
+
+.setting-row {
+  min-height: 58px;
+  width: 100%;
+  padding: 9px 12px;
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border-bottom: 1px solid rgba(151, 204, 255, 0.08);
+  text-align: left;
+}
+
+.setting-row:last-child {
+  border-bottom: 0;
+}
+
+.setting-row svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.setting-row strong {
+  display: block;
+  font-size: 15px;
+}
+
+.setting-row span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.switch {
+  position: relative;
+  width: 50px;
+  height: 30px;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+}
+
+.switch i,
+.drawer-toggle i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(91, 105, 122, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.switch i::before,
+.drawer-toggle i::before {
+  content: "";
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  top: 3px;
+  left: 3px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  transition: transform 180ms ease;
+}
+
+.switch input:checked + i,
+.drawer-toggle input:checked + i {
+  background: linear-gradient(180deg, #7ebcff, #3c7fcb);
+}
+
+.switch input:checked + i::before,
+.drawer-toggle input:checked + i::before {
+  transform: translateX(20px);
+}
+
+.row-chevron {
+  width: 9px;
+  height: 9px;
+  border-right: 1.7px solid currentColor;
+  border-bottom: 1.7px solid currentColor;
+  transform: rotate(-45deg);
+  opacity: 0.9;
+}
+
+.style-preview {
+  min-height: 164px;
+  display: grid;
+  place-items: center;
+}
+
+.about-panel {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.about-panel h3,
+.about-panel p {
+  margin: 0;
+}
+
+.about-panel p {
+  color: var(--muted);
+  line-height: 1.65;
+  font-size: 14px;
+}
+
+.app-mark {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04));
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.2);
+}
+
+.mini-dice-icon {
+  width: 42px;
+  height: 42px;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 10px rgba(0, 0, 0, 0.34));
+}
+
+.bottom-nav {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  bottom: calc(10px + var(--safe-bottom));
+  width: min(calc(100vw - 24px), 496px);
+  height: 66px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  padding: 6px;
+  border-radius: 20px;
+  background: rgba(9, 22, 35, 0.72);
+  box-shadow:
+    inset 0 0 0 1px rgba(145, 201, 255, 0.15),
+    0 -10px 40px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(18px);
+  transform: translateX(-50%);
+}
+
+.bottom-nav button {
+  min-height: 52px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 3px;
+  border-radius: 15px;
+  background: transparent;
+  color: rgba(232, 242, 255, 0.76);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bottom-nav button.active {
+  color: var(--ice);
+  background: rgba(126, 190, 255, 0.08);
+}
+
+.bottom-nav svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.side-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.side-drawer.open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.drawer-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.side-drawer.open .drawer-scrim {
+  opacity: 1;
+}
+
+.drawer-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(78vw, 320px);
+  height: 100%;
+  padding: calc(24px + var(--safe-top)) 14px calc(18px + var(--safe-bottom));
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 18px;
+  background: rgba(10, 22, 35, 0.94);
+  box-shadow: -18px 0 50px rgba(0, 0, 0, 0.45), inset 1px 0 0 rgba(151, 204, 255, 0.1);
+  transform: translateX(100%);
+  transition: transform 220ms ease;
+  backdrop-filter: blur(22px);
+}
+
+.side-drawer.open .drawer-panel {
+  transform: translateX(0);
+}
+
+.drawer-profile {
+  display: grid;
+  grid-template-columns: 48px 1fr 44px;
+  align-items: center;
+  gap: 10px;
+}
+
+.drawer-profile strong,
+.drawer-profile span {
+  display: block;
+}
+
+.drawer-profile span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.drawer-links {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.drawer-links button {
+  min-height: 52px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  font-weight: 800;
+}
+
+.drawer-links button.active,
+.drawer-links button:active {
+  background: rgba(151, 204, 255, 0.12);
+}
+
+.drawer-toggle {
+  position: relative;
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 1fr 50px;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.drawer-toggle input {
+  position: absolute;
+  opacity: 0;
+}
+
+.drawer-toggle i {
+  position: relative;
+  width: 50px;
+  height: 30px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(96px + var(--safe-bottom));
+  z-index: 200;
+  max-width: min(86vw, 360px);
+  min-height: 42px;
+  padding: 10px 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(15, 31, 48, 0.92);
+  color: white;
+  box-shadow: inset 0 0 0 1px rgba(151, 204, 255, 0.24), 0 12px 30px rgba(0, 0, 0, 0.32);
+  transform: translate(-50%, 18px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+  backdrop-filter: blur(16px);
+  font-size: 14px;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.light-mode {
+  --bg: #eef5fb;
+  --bg-2: #dfeaf4;
+  --panel: rgba(236, 245, 252, 0.82);
+  --panel-strong: rgba(241, 247, 252, 0.92);
+  --line: rgba(58, 116, 168, 0.2);
+  --text: #0c1722;
+  --muted: rgba(18, 33, 47, 0.68);
+  background: #eef5fb;
+}
+
+.light-mode .app-shell {
+  background:
+    linear-gradient(rgba(59, 116, 172, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 116, 172, 0.04) 1px, transparent 1px),
+    radial-gradient(circle at 50% 34%, rgba(78, 153, 222, 0.17), transparent 38%),
+    linear-gradient(180deg, #eef5fb, #dfeaf4);
+}
+
+.light-mode .bottom-nav,
+.light-mode .drawer-panel,
+.light-mode .settings-list,
+.light-mode .chart-panel,
+.light-mode .about-panel,
+.light-mode .select-card,
+.light-mode .style-card,
+.light-mode .history-item,
+.light-mode .empty-state,
+.light-mode .stat-card {
+  background: rgba(238, 246, 252, 0.78);
+}
+
+@media (max-width: 370px) {
+  .page-stack {
+    padding-inline: 12px;
+  }
+
+  .page {
+    inset-inline: 12px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .select-card,
+  .style-card {
+    min-height: 148px;
+  }
+
+  .result-panel strong {
+    font-size: 50px;
+  }
+}
+
+@media (min-width: 700px) {
+  body {
+    overflow: auto;
+    padding: 28px 0;
+  }
+
+  .app-shell {
+    border-radius: 28px;
+    border: 1px solid rgba(151, 204, 255, 0.17);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}

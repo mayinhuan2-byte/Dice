@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="D12 silver dice">
+  <defs>
+    <radialGradient id="body" cx="35%" cy="20%" r="78%">
+      <stop stop-color="#ffffff"/>
+      <stop offset=".32" stop-color="#dce4eb"/>
+      <stop offset=".68" stop-color="#7f8a96"/>
+      <stop offset="1" stop-color="#252f39"/>
+    </radialGradient>
+    <linearGradient id="facetDark" x1="76" y1="94" x2="190" y2="219" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#aab4bf"/>
+      <stop offset="1" stop-color="#2f3944"/>
+    </linearGradient>
+    <linearGradient id="facetLight" x1="68" y1="36" x2="140" y2="130" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#bfc8d1"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-18%" width="140%" height="145%">
+      <feDropShadow dx="0" dy="18" stdDeviation="13" flood-color="#02070d" flood-opacity=".56"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="7" flood-color="#9bd5ff" flood-opacity=".22"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)" stroke="#eef6ff" stroke-width="2.5" stroke-linejoin="round">
+    <path d="M128 20 185 38 222 87 222 146 186 205 128 236 70 205 34 146 34 87 71 38Z" fill="url(#body)"/>
+    <path d="M128 20 92 87 128 114 164 87Z" fill="url(#facetLight)" opacity=".95"/>
+    <path d="M71 38 34 87 92 87 128 20Z" fill="#d8e0e8" opacity=".84"/>
+    <path d="M185 38 128 20 164 87 222 87Z" fill="#c2ccd6" opacity=".76"/>
+    <path d="M34 87 34 146 92 166 92 87Z" fill="#89949f" opacity=".84"/>
+    <path d="M222 87 164 87 164 166 222 146Z" fill="#6f7a85" opacity=".84"/>
+    <path d="M92 87 128 114 164 87 164 166 128 194 92 166Z" fill="url(#facetDark)" opacity=".95"/>
+    <path d="M34 146 70 205 128 194 92 166Z" fill="#525d68" opacity=".86"/>
+    <path d="M222 146 164 166 128 194 186 205Z" fill="#3d4752" opacity=".86"/>
+    <path d="M70 205 128 236 186 205 128 194Z" fill="#242e38" opacity=".88"/>
+    <text x="108" y="76" fill="#26303a" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="800">2</text>
+    <text x="62" y="136" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800">1</text>
+    <text x="113" y="157" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="800">3</text>
+    <text x="178" y="136" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800">4</text>
+  </g>
+</svg>
